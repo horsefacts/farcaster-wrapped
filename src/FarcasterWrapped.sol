@@ -8,11 +8,13 @@ import {SignatureCheckerLib} from "solady/src/utils/SignatureCheckerLib.sol";
 import {console2} from "forge-std/console2.sol";
 
 contract FarcasterWrapped is ERC721, EIP712 {
+    error InvalidPayment();
     error InvalidSignature();
 
     bytes32 internal constant MINT_TYPEHASH = keccak256(
         "Mint(address to,uint256 fid,uint24 mins,uint16 streak,string username,bytes32 cid)"
     );
+    uint256 public constant mintFee = 0.000777 ether;
 
     address public signer;
 
@@ -47,7 +49,8 @@ contract FarcasterWrapped is ERC721, EIP712 {
         WrappedStats calldata stats,
         bytes32 cid,
         bytes calldata sig
-    ) public {
+    ) public payable {
+        if (msg.value != mintFee) revert InvalidPayment();
         if (!_verifySignature(to, fid, stats, cid, sig)) {
             revert InvalidSignature();
         }

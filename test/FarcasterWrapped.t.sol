@@ -36,6 +36,7 @@ contract FarcasterWrappedTest is Test {
     }
 
     function testFuzz_mint_validSig(
+        address caller,
         address to,
         uint256 fid,
         FarcasterWrapped.WrappedStats calldata stats,
@@ -43,9 +44,11 @@ contract FarcasterWrappedTest is Test {
     ) public {
         vm.assume(to != address(0));
 
+        vm.deal(caller, token.mintFee());
         bytes memory sig = _signMint(signerPk, to, fid, stats, cid);
 
-        token.mint(to, fid, stats, cid, sig);
+        vm.prank(caller);
+        token.mint{ value: token.mintFee() }(to, fid, stats, cid, sig);
 
         assertEq(token.balanceOf(to), 1);
         assertEq(token.ownerOf(fid), to);
@@ -58,6 +61,7 @@ contract FarcasterWrappedTest is Test {
     }
 
     function testFuzz_mint_invalidSig(
+        address caller,
         address to,
         uint256 fid,
         FarcasterWrapped.WrappedStats calldata stats,
@@ -68,8 +72,52 @@ contract FarcasterWrappedTest is Test {
         bytes memory validSig = _signMint(signerPk, to, fid, stats, cid);
         vm.assume(keccak256(sig) != keccak256(validSig));
 
+        uint256 fee = token.mintFee();
+
+        vm.deal(caller, fee);
+
         vm.expectRevert(FarcasterWrapped.InvalidSignature.selector);
-        token.mint(to, fid, stats, cid, sig);
+        vm.prank(caller);
+        token.mint{ value: fee }(to, fid, stats, cid, sig);
+    }
+
+    function testFuzz_mint_overPayment(
+        address caller,
+        address to,
+        uint256 fid,
+        FarcasterWrapped.WrappedStats calldata stats,
+        bytes32 cid,
+        uint256 _payment
+    ) public {
+        vm.assume(to != address(0));
+
+        bytes memory sig = _signMint(signerPk, to, fid, stats, cid);
+
+        uint256 payment = bound(_payment, token.mintFee() + 1, type(uint256).max);
+        vm.deal(caller, payment);
+
+        vm.expectRevert(FarcasterWrapped.InvalidPayment.selector);
+        vm.prank(caller);
+        token.mint{ value: payment }(to, fid, stats, cid, sig);
+    }
+
+    function testFuzz_mint_underPayment(
+        address caller,
+        address to,
+        uint256 fid,
+        FarcasterWrapped.WrappedStats calldata stats,
+        bytes32 cid,
+        uint256 _payment
+    ) public {
+        vm.assume(to != address(0));
+
+        bytes memory sig = _signMint(signerPk, to, fid, stats, cid);
+        uint256 payment = bound(_payment, 0, token.mintFee() - 1);
+        vm.deal(caller, payment);
+
+        vm.expectRevert(FarcasterWrapped.InvalidPayment.selector);
+        vm.prank(caller);
+        token.mint{ value: payment }(to, fid, stats, cid, sig);
     }
 
     function _signMint(
