@@ -3,11 +3,15 @@ pragma solidity 0.8.23;
 
 import {ERC721} from "solady/src/tokens/ERC721.sol";
 import {EIP712} from "solady/src/utils/EIP712.sol";
+import {Ownable} from "solady/src/auth/Ownable.sol";
+import {SafeTransferLib} from "solady/src/utils/SafeTransferLib.sol";
 import {SignatureCheckerLib} from "solady/src/utils/SignatureCheckerLib.sol";
+
+import {Metadata} from "./Metadata.sol";
 
 import {console2} from "forge-std/console2.sol";
 
-contract FarcasterWrapped is ERC721, EIP712 {
+contract FarcasterWrapped is Ownable, ERC721, EIP712 {
     error InvalidPayment();
     error InvalidSignature();
 
@@ -15,7 +19,6 @@ contract FarcasterWrapped is ERC721, EIP712 {
         "Mint(address to,uint256 fid,uint24 mins,uint16 streak,string username,bytes32 cid)"
     );
     uint256 public constant mintFee = 0.000777 ether;
-
     address public signer;
 
     struct WrappedStats {
@@ -27,7 +30,8 @@ contract FarcasterWrapped is ERC721, EIP712 {
     mapping(uint256 fid => WrappedStats) public statsOf;
     mapping(uint256 fid => bytes32 cid) public cidOf;
 
-    constructor(address _signer) {
+    constructor(address _owner, address _signer) {
+        _initializeOwner(_owner);
         signer = _signer;
     }
 
@@ -39,8 +43,24 @@ contract FarcasterWrapped is ERC721, EIP712 {
         return unicode"FC 🎁 2023";
     }
 
-    function tokenURI(uint256) public pure override returns (string memory) {
-        return "https://fake-not-implemented.com/";
+    function contractURI() public pure returns (string memory) {
+        return Metadata.contractURI();
+    }
+
+    function tokenURI(uint256 fid)
+        public
+        view
+        override
+        returns (string memory)
+    {
+        WrappedStats memory stats = statsOf[fid];
+        return Metadata.tokenURI(
+            fid, imageURI(fid), stats.mins, stats.streak, stats.username
+        );
+    }
+
+    function imageURI(uint256 fid) public view returns (string memory) {
+        return Metadata.toImageURI(cidOf[fid]);
     }
 
     function mint(
@@ -49,7 +69,7 @@ contract FarcasterWrapped is ERC721, EIP712 {
         WrappedStats calldata stats,
         bytes32 cid,
         bytes calldata sig
-    ) public payable {
+    ) external payable {
         if (msg.value != mintFee) revert InvalidPayment();
         if (!_verifySignature(to, fid, stats, cid, sig)) {
             revert InvalidSignature();
@@ -57,6 +77,10 @@ contract FarcasterWrapped is ERC721, EIP712 {
         statsOf[fid] = stats;
         cidOf[fid] = cid;
         _mint(to, fid);
+    }
+
+    function withdrawBalance(address to) external onlyOwner {
+        SafeTransferLib.safeTransferAllETH(to);
     }
 
     function _domainNameAndVersion()

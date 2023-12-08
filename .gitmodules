@@ -4,3 +4,6 @@
 [submodule "lib/solady"]
 	path = lib/solady
 	url = https://github.com/Vectorized/solady
+[submodule "lib/base58-solidity"]
+	path = lib/base58-solidity
+	url = https://github.com/storyicon/base58-solidity
