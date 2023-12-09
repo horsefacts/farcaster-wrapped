@@ -192,11 +192,11 @@ contract FarcasterWrappedTest is Test {
 
         assertEq(
             dataURI,
-            "data:application/json;base64,eyJuYW1lIjoiRmFyY2FzdGVyIFdyYXBwZWQgMjAyMyIsImltYWdlIjoiVE9ETyIsImRlc2NyaXB0aW9uIjoiVE9ETyJ9"
+            "data:application/json;base64,eyJuYW1lIjoiRmFyY2FzdGVyIFdyYXBwZWQgMjAyMyIsImltYWdlIjoiVE9ETyIsImRlc2NyaXB0aW9uIjoiQSBjb21tZW1vcmF0aXZlIE5GVCBmb3IgYWxsIHRoZSBwZW9wbGUgaW52b2x2ZWQgaW4gcHJvbGlmZXJhdGluZyB0aGUgRmFyY2FzdGVyIHByb3RvY29sIGluIDIwMjMifQ=="
         );
         assertEq(
             decoded,
-            '{"name":"Farcaster Wrapped 2023","image":"TODO","description":"TODO"}'
+            '{"name":"Farcaster Wrapped 2023","image":"TODO","description":"A commemorative NFT for all the people involved in proliferating the Farcaster protocol in 2023"}'
         );
     }
 
