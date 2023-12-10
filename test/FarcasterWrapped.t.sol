@@ -192,11 +192,11 @@ contract FarcasterWrappedTest is Test {
 
         assertEq(
             dataURI,
-            "data:application/json;base64,eyJuYW1lIjoiRmFyY2FzdGVyIFdyYXBwZWQgMjAyMyIsImltYWdlIjoiVE9ETyIsImRlc2NyaXB0aW9uIjoiQSBjb21tZW1vcmF0aXZlIE5GVCBmb3IgYWxsIHRoZSBwZW9wbGUgaW52b2x2ZWQgaW4gcHJvbGlmZXJhdGluZyB0aGUgRmFyY2FzdGVyIHByb3RvY29sIGluIDIwMjMifQ=="
+            "data:application/json;base64,eyJuYW1lIjoiRmFyY2FzdGVyIFdyYXBwZWQgMjAyMyIsImltYWdlIjoiaXBmczovL2JhZmtyZWljeGN3N3ZremgzM3B5MnBxeDZneHAydmRxMmNjeHJrNHFvb2NydGloeWN0NG5ldmhhemptIiwiZGVzY3JpcHRpb24iOiJBIGNvbW1lbW9yYXRpdmUgTkZUIGZvciBhbGwgdGhlIHBlb3BsZSBpbnZvbHZlZCBpbiBwcm9saWZlcmF0aW5nIHRoZSBGYXJjYXN0ZXIgcHJvdG9jb2wgaW4gMjAyMyJ9"
         );
         assertEq(
             decoded,
-            '{"name":"Farcaster Wrapped 2023","image":"TODO","description":"A commemorative NFT for all the people involved in proliferating the Farcaster protocol in 2023"}'
+            '{"name":"Farcaster Wrapped 2023","image":"ipfs://bafkreicxcw7vkzh33py2pqx6gxp2vdq2ccxrk4qoocrtihyct4nevhazjm","description":"A commemorative NFT for all the people involved in proliferating the Farcaster protocol in 2023"}'
         );
     }
 

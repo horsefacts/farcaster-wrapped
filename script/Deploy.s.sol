@@ -7,6 +7,10 @@ import {FarcasterWrapped} from "../src/FarcasterWrapped.sol";
 contract DeployScript is Script {
     function run() public {
         vm.broadcast();
-        new FarcasterWrapped{salt: ""}(msg.sender, msg.sender, 0.000001 ether);
+        new FarcasterWrapped{salt: ""}(
+            msg.sender,
+            address(0xb07cD551fE9b8b99AAbdD2d38C6E356D48e2EFC9),
+            0.000001 ether
+        );
     }
 }
