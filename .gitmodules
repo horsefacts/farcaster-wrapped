@@ -7,3 +7,6 @@
 [submodule "lib/solady"]
 	path = lib/solady
 	url = https://github.com/Vectorized/solady
+[submodule "lib/scripty.sol"]
+	path = lib/scripty.sol
+	url = https://github.com/intartnft/scripty.sol

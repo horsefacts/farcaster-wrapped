@@ -1,20 +1,19 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.23;
+pragma solidity 0.8.21;
 
 import {EIP712} from "solady/src/utils/EIP712.sol";
 import {ERC721} from "solady/src/tokens/ERC721.sol";
-import {LibString} from "solady/src/utils/LibString.sol";
 import {Ownable} from "solady/src/auth/Ownable.sol";
 import {SafeTransferLib} from "solady/src/utils/SafeTransferLib.sol";
 import {SignatureCheckerLib} from "solady/src/utils/SignatureCheckerLib.sol";
 
-import {LibCID} from "./LibCID.sol";
+import {Renderer} from "./Renderer.sol";
 import {LibDataURI} from "./LibDataURI.sol";
 
 contract FarcasterWrapped is Ownable, ERC721, EIP712 {
-    using LibString for uint256;
-    using LibCID for bytes32;
     using LibDataURI for string;
+
+    Renderer public renderer = new Renderer();
 
     /// @notice Caller provided incorrect payable amount
     error InvalidPayment();
@@ -27,7 +26,7 @@ contract FarcasterWrapped is Ownable, ERC721, EIP712 {
 
     /// @notice EIP-712 typehash for `Mint` message
     bytes32 internal constant MINT_TYPEHASH = keccak256(
-        "Mint(address to,uint256 fid,uint24 mins,uint16 streak,string username,bytes32 cid)"
+        "Mint(address to,uint256 fid,uint24 mins,uint16 streak,string username)"
     );
 
     /// @notice Fee in wei per mint
@@ -49,8 +48,8 @@ contract FarcasterWrapped is Ownable, ERC721, EIP712 {
     /// @notice Read stats by fid
     mapping(uint256 fid => WrappedStats) public statsOf;
 
-    /// @notice Read token CID by fid
-    mapping(uint256 fid => bytes32 cid) public cidOf;
+    /// @notice Random seed by fid
+    mapping(uint256 fid => uint32 seed) public seeds;
 
     /// @notice Set owner, signer, and mint fee
     /// @param _owner Contract owner address
@@ -74,8 +73,8 @@ contract FarcasterWrapped is Ownable, ERC721, EIP712 {
 
     /// @notice Read contract metadata
     /// @return Base64 encoded metadata data URI
-    function contractURI() public pure returns (string memory) {
-        return contractJSON().toDataURI();
+    function contractURI() public view returns (string memory) {
+        return renderer.contractJSON().toDataURI("application/json");
     }
 
     /// @notice Read token metadata
@@ -87,41 +86,10 @@ contract FarcasterWrapped is Ownable, ERC721, EIP712 {
         override
         returns (string memory)
     {
-        return tokenJSON(fid).toDataURI();
-    }
-
-    /// @notice Read token image URI
-    /// @param fid Token/Farcaster ID
-    /// @return Image ipfs:// URI
-    function imageURI(uint256 fid) public view returns (string memory) {
-        return cidOf[fid].toImageURI();
-    }
-
-    /// @notice Read token metadata JSON
-    /// @param fid Token/Farcaster ID
-    /// @return Token metadata JSON
-    function tokenJSON(uint256 fid) public view returns (string memory) {
         WrappedStats memory stats = statsOf[fid];
-        return string.concat(
-            '{"image":"',
-            imageURI(fid),
-            '","name":"FID #',
-            fid.toString(),
-            '","attributes":[{"trait_type":"Minutes Spent Casting","value":',
-            uint256(stats.mins).toString(),
-            '},{"trait_type":"Streak","value":',
-            uint256(stats.streak).toString(),
-            '},{"trait_type":"Username","value":"',
-            stats.username,
-            '"}]}'
-        );
-    }
-
-    /// @notice Read contract metadata JSON
-    /// @return Contract metadata JSON
-    function contractJSON() public pure returns (string memory) {
-        return
-        '{"name":"Farcaster Wrapped 2023","image":"ipfs://bafkreicxcw7vkzh33py2pqx6gxp2vdq2ccxrk4qoocrtihyct4nevhazjm","description":"A commemorative NFT for all the people involved in proliferating the Farcaster protocol in 2023"}';
+        return renderer.tokenJSON(
+            seeds[fid], fid, stats.mins, stats.streak, stats.username
+        ).toDataURI("application/json");
     }
 
     /// @notice Mint a Farcaster Wrapped token.
@@ -131,15 +99,14 @@ contract FarcasterWrapped is Ownable, ERC721, EIP712 {
         address to,
         uint256 fid,
         WrappedStats calldata stats,
-        bytes32 cid,
         bytes calldata sig
     ) external payable {
         if (msg.value != mintFee) revert InvalidPayment();
-        if (!_verifySignature(to, fid, stats, cid, sig)) {
+        if (!_verifySignature(to, fid, stats, sig)) {
             revert InvalidSignature();
         }
         statsOf[fid] = stats;
-        cidOf[fid] = cid;
+        seeds[fid] = _seed(fid);
         _mint(to, fid);
     }
 
@@ -152,6 +119,19 @@ contract FarcasterWrapped is Ownable, ERC721, EIP712 {
     /// @notice Withdraw contract balance. Only callable by owner.
     function withdrawBalance(address to) external onlyOwner {
         SafeTransferLib.safeTransferAllETH(to);
+    }
+
+    /// @dev Generate token PRNG seed.
+    function _seed(uint256 fid) internal view returns (uint32) {
+        return uint32(
+            uint256(
+                keccak256(
+                    abi.encodePacked(
+                        block.timestamp, blockhash(block.number - 1), fid
+                    )
+                )
+            )
+        );
     }
 
     /// @dev EIP-712 domain name and contract version.
@@ -169,7 +149,6 @@ contract FarcasterWrapped is Ownable, ERC721, EIP712 {
         address to,
         uint256 fid,
         WrappedStats calldata stats,
-        bytes32 cid,
         bytes calldata sig
     ) internal view returns (bool) {
         bytes32 digest = _hashTypedData(
@@ -180,8 +159,7 @@ contract FarcasterWrapped is Ownable, ERC721, EIP712 {
                     fid,
                     stats.mins,
                     stats.streak,
-                    keccak256(bytes(stats.username)),
-                    cid
+                    keccak256(bytes(stats.username))
                 )
             )
         );
