@@ -21,18 +21,28 @@ document.addEventListener("DOMContentLoaded", function () {
       : window.innerHeight;
   }
 
+  function initializeCanvas(canvas) {
+    const width = getSize();
+    const height = getSize();
+
+    const scale = height / 720;
+
+    const gridSize =
+      g == 4 ? 20 : g == 3 ? 40 : g == 2 ? 60 : g == 1 ? 80 : 120;
+    canvas.width = width;
+    canvas.height = height;
+
+    return { width, height, scale, gridSize };
+  }
+
+  const wrapper = document.getElementById("w");
+  wrapper.className = "";
+
   const main = document.querySelector("main");
   const seed = parseInt(main.dataset.seed, 10);
-  const random = makeRandom(Math.random() * 100000);
+  const random = makeRandom(seed);
 
   let g = getRandomInt(4, random);
-
-  let width = getSize();
-  let height = getSize();
-
-  let scale = height / 720;
-
-  let gridSize = g == 4 ? 20 : g == 3 ? 40 : g == 2 ? 60 : g == 1 ? 80 : 120;
 
   let pathPoints = [];
   let numSquares = 200;
@@ -54,8 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
       : "#8A63D2";
 
   const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
+  let { width, height, scale, gridSize } = initializeCanvas(canvas);
   const container = document.getElementById("c");
   container.appendChild(canvas);
   const ctx = canvas.getContext("2d");
@@ -84,9 +93,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     return { x, y };
   }
-
-  cols = width / (gridSize * scale);
-  rows = height / (gridSize * scale);
 
   let v1 = { x: random() * 360 * scale, y: random() * 360 * scale };
   let qv1 = { x: random() * 1000 * scale, y: random() * 1000 * scale };
@@ -134,8 +140,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let frameCount = 0;
 
   function draw() {
-    ctx.canvas.width = getSize();
-    ctx.canvas.height = getSize();
+    let { width, height, gridSize } = initializeCanvas(canvas);
     ctx.fillStyle = background_color;
     ctx.fillRect(0, 0, width, height);
 
@@ -153,6 +158,11 @@ document.addEventListener("DOMContentLoaded", function () {
       ctx.fillRect(x + 10, y, gridSize, gridSize);
     }
   }
+
+  window.addEventListener("resize", () => {
+    ({ width, height, scale, gridSize } = initializeCanvas(canvas));
+    console.log("uhhhhh............");
+  });
 
   function animate() {
     frameCount++;

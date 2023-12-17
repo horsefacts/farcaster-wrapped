@@ -13,6 +13,10 @@
         justify-content: center;
         align-items: center;
       }
+      main {
+        width: 100vw;
+        height: 100vh;
+      }
       #c {
         position: relative;
       }
@@ -23,6 +27,8 @@
         height: 100%;
         color: white;
         font-weight: 400;
+        width: 100%;
+        height: 100%;
       }
       .t {
         font-size: min(4vw, 4vh);
@@ -43,18 +49,22 @@
         flex-grow: 1;
       }
       #a {
-        margin-top: 1rem;
-        margin-left: 1rem;
+        margin-top: 2rem;
+        margin-left: 2rem;
       }
       #z {
-        margin-bottom: 1rem;
-        margin-left: 1rem;
+        margin-bottom: 2rem;
+        margin-left: 2rem;
+      }
+      .p {
+        background-color: #3f1e94;
       }
     </style>
+    <script src="sketch.js"></script>
   </head>
   <body>
     <main id="c" data-seed="1">
-      <div id="w">
+      <div id="w" class="p">
         <div id="a">
           <div class="t">Farcaster Wrapped 2023</div>
           <div class="u">horsefacts.eth</div>
