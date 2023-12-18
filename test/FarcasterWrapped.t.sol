@@ -64,8 +64,9 @@ contract FarcasterWrappedTest is Test {
 
         assertEq(token.balanceOf(to), 1);
         assertEq(token.ownerOf(fid), to);
-        (uint24 mins, uint16 streak, string memory username) =
-            token.statsOf(fid);
+        (uint24 mins, uint16 streak, string memory username) = token.statsOf(
+            fid
+        );
         assertEq(mins, stats.mins);
         assertEq(streak, stats.streak);
         assertEq(username, stats.username);
@@ -102,8 +103,11 @@ contract FarcasterWrappedTest is Test {
 
         bytes memory sig = _signMint(signerPk, to, fid, stats);
 
-        uint256 payment =
-            bound(_payment, token.mintFee() + 1, type(uint256).max);
+        uint256 payment = bound(
+            _payment,
+            token.mintFee() + 1,
+            type(uint256).max
+        );
         vm.deal(caller, payment);
 
         vm.expectRevert(FarcasterWrapped.InvalidPayment.selector);
@@ -152,8 +156,8 @@ contract FarcasterWrappedTest is Test {
 
     function test_gen_metadata() public {
         uint256 fid = 1;
-        FarcasterWrapped.WrappedStats memory stats =
-            FarcasterWrapped.WrappedStats(1000, 10, "username");
+        FarcasterWrapped.WrappedStats memory stats = FarcasterWrapped
+            .WrappedStats(1000, 10, "username");
         vm.deal(address(this), token.mintFee());
         bytes memory sig = this._signMint(signerPk, address(this), fid, stats);
 
@@ -175,11 +179,11 @@ contract FarcasterWrappedTest is Test {
 
         assertEq(
             dataURI,
-            "data:application/json;base64,eyJuYW1lIjoiRmFyY2FzdGVyIFdyYXBwZWQgMjAyMyIsImltYWdlIjoiaXBmczovL2JhZmtyZWljeGN3N3ZremgzM3B5MnBxeDZneHAydmRxMmNjeHJrNHFvb2NydGloeWN0NG5ldmhhemptIiwiZGVzY3JpcHRpb24iOiJBIGNvbW1lbW9yYXRpdmUgTkZUIGZvciBhbGwgdGhlIHBlb3BsZSBpbnZvbHZlZCBpbiBwcm9saWZlcmF0aW5nIHRoZSBGYXJjYXN0ZXIgcHJvdG9jb2wgaW4gMjAyMyJ9"
+            "data:application/json;base64,eyJuYW1lIjoiRmFyY2FzdGVyIFdyYXBwZWQgMjAyMyIsImltYWdlIjoiaXBmczovL2JhZnliZWliZXNlc2ZjY2RkdGN6YXRiNnQ0cHQ2cTZxemd2dWFnMzZ0a3llbG1uc3RhZ2t0bnJyZnRpIiwiZGVzY3JpcHRpb24iOiJBIGNvbW1lbW9yYXRpdmUgTkZUIGZvciBhbGwgdGhlIHBlb3BsZSBpbnZvbHZlZCBpbiBwcm9saWZlcmF0aW5nIHRoZSBGYXJjYXN0ZXIgcHJvdG9jb2wgaW4gMjAyMyJ9"
         );
         assertEq(
             decoded,
-            '{"name":"Farcaster Wrapped 2023","image":"ipfs://bafkreicxcw7vkzh33py2pqx6gxp2vdq2ccxrk4qoocrtihyct4nevhazjm","description":"A commemorative NFT for all the people involved in proliferating the Farcaster protocol in 2023"}'
+            '{"name":"Farcaster Wrapped 2023","image":"ipfs://bafybeibesesfccddtczatb6t4pt6q6qzgvuag36tkyelmnstagktnrrfti","description":"A commemorative NFT for all the people involved in proliferating the Farcaster protocol in 2023"}'
         );
     }
 
@@ -229,10 +233,7 @@ contract FarcasterWrappedTest is Test {
         assertEq(token.signer(), newSigner);
     }
 
-    function testFuzz_setSigner_auth(
-        address caller,
-        address newSigner
-    ) public {
+    function testFuzz_setSigner_auth(address caller, address newSigner) public {
         vm.assume(caller != owner);
 
         vm.expectRevert(Unauthorized.selector);
