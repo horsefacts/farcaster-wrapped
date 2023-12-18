@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function() {
   function makeRandom(seed) {
     const k = 16807;
     const mod = 2147483647;
@@ -21,51 +21,28 @@ document.addEventListener("DOMContentLoaded", function () {
       : window.innerHeight;
   }
 
-  function initializeCanvas(canvas) {
-    const width = getSize();
-    const height = getSize();
-
-    const scale = height / 720;
-
-    const gridSize =
-      g == 4 ? 20 : g == 3 ? 40 : g == 2 ? 60 : g == 1 ? 80 : 120;
-    canvas.width = width;
-    canvas.height = height;
-
-    return { width, height, scale, gridSize };
-  }
-
-  const wrapper = document.getElementById("w");
-  wrapper.className = "";
-
   const main = document.querySelector("main");
   const seed = parseInt(main.dataset.seed, 10);
   const random = makeRandom(seed);
 
   let g = getRandomInt(4, random);
 
+  let width = getSize();
+  let height = getSize();
+
+  let scale = height / 720;
+
+  let gridSize = g == 4 ? 20 : g == 3 ? 40 : g == 2 ? 60 : g == 1 ? 80 : 120;
+
   let pathPoints = [];
   let numSquares = 200;
   let totalPoints = 100;
 
-  let x = getRandomInt(6, random);
-
-  var background_color =
-    x == 5
-      ? "#524D61"
-      : x == 4
-      ? "#261356"
-      : x == 3
-      ? "#8A63D2"
-      : x == 2
-      ? "#3F1E94"
-      : x == 1
-      ? "#BAB3CD"
-      : "#8A63D2";
+  var background_color = main.dataset.color;
 
   const canvas = document.createElement("canvas");
-  let { width, height, scale, gridSize } = initializeCanvas(canvas);
   const container = document.getElementById("c");
+  container.classList.remove("p");
   container.appendChild(canvas);
   const ctx = canvas.getContext("2d");
 
@@ -94,21 +71,28 @@ document.addEventListener("DOMContentLoaded", function () {
     return { x, y };
   }
 
-  let v1 = { x: random() * 360 * scale, y: random() * 360 * scale };
-  let qv1 = { x: random() * 1000 * scale, y: random() * 1000 * scale };
-  let qv2 = {
-    x: random() * 500 * scale,
-    y: random() * 1000 * scale + 500 * scale,
-  };
-  let bv1 = {
-    x: random() * 1150 * scale - 150 * scale,
-    y: random() * 1000 * scale,
-  };
-  let bv2 = { x: random() * 1000 * scale, y: random() * 1000 * scale };
-  let bv3 = {
-    x: random() * 1150 * scale - 150 * scale,
-    y: random() * 1000 * scale + 500 * scale,
-  };
+  cols = width / (gridSize * scale);
+  rows = height / (gridSize * scale);
+
+  var v1x = random()
+  var v1y = random()
+  var qv1x = random()
+  var qv1y = random()
+  var qv2x = random()
+  var qv2y = random()
+  var bv1x = random()
+  var bv1y = random()
+  var bv2x = random()
+  var bv2y = random()
+  var bv3x = random()
+  var bv3y = random()
+
+  let v1 = { x: v1x * 360 * scale, y: v1y * 360 * scale };
+  let qv1 = { x: qv1x * 1000 * scale, y: qv1y * 1000 * scale };
+  let qv2 = { x: qv2x * 500 * scale, y: qv2y * 1000 * scale + 500 * scale };
+  let bv1 = { x: bv1x * 1150 * scale - 150 * scale, y: bv1y * 1000 * scale, };
+  let bv2 = { x: bv2x * 1000 * scale, y: bv2y * 1000 * scale };
+  let bv3 = { x: bv3x * 1150 * scale - 150 * scale, y: bv3y * 1000 * scale + 500 * scale, };
 
   for (let i = 0; i <= totalPoints / 3; i++) {
     let t = i / (totalPoints / 3);
@@ -140,7 +124,8 @@ document.addEventListener("DOMContentLoaded", function () {
   let frameCount = 0;
 
   function draw() {
-    let { width, height, gridSize } = initializeCanvas(canvas);
+    ctx.canvas.width = getSize();
+    ctx.canvas.height = getSize();
     ctx.fillStyle = background_color;
     ctx.fillRect(0, 0, width, height);
 
@@ -159,16 +144,65 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  window.addEventListener("resize", () => {
-    ({ width, height, scale, gridSize } = initializeCanvas(canvas));
-    console.log("uhhhhh............");
-  });
-
   function animate() {
     frameCount++;
     draw();
     setTimeout(() => requestAnimationFrame(animate), 25);
   }
+
+  function resize() {
+    width = getSize();
+    height = getSize();
+    scale = height / 720;  // Recalculate scale
+
+    // Recalculate grid size
+    gridSize = g == (4 * scale) ? (20 * scale) : g == 3 ? (40 * scale) : g == 2 ? (60 * scale) : g == 1 ? (80 * scale) : (120 * scale);
+
+    // Update canvas size
+    ctx.canvas.width = width;
+    ctx.canvas.height = height;
+
+    // Recalculate positions
+    let v1 = { x: v1x * 360 * scale, y: v1y * 360 * scale };
+    let qv1 = { x: qv1x * 1000 * scale, y: qv1y * 1000 * scale };
+    let qv2 = { x: qv2x * 500 * scale, y: qv2y * 1000 * scale + 500 * scale };
+    let bv1 = { x: bv1x * 1150 * scale - 150 * scale, y: bv1y * 1000 * scale, };
+    let bv2 = { x: bv2x * 1000 * scale, y: bv2y * 1000 * scale };
+    let bv3 = { x: bv3x * 1150 * scale - 150 * scale, y: bv3y * 1000 * scale + 500 * scale, };
+
+
+    // Recalculating pathPoints
+    pathPoints = [];
+    for (let i = 0; i <= totalPoints / 3; i++) {
+      let t = i / (totalPoints / 3);
+      let point = quadraticPoint(v1.x, qv1.x, qv2.x, v1.y, qv1.y, qv2.y, t);
+      pathPoints.push(point);
+    }
+
+    for (let i = 0; i <= totalPoints / 3; i++) {
+      let t = i / (totalPoints / 3);
+      let x = bezierPoint(qv2.x, bv1.x, bv2.x, bv3.x, t);
+      let y = bezierPoint(qv2.y, bv1.y, bv2.y, bv3.y, t);
+      pathPoints.push({ x, y });
+    }
+
+    for (let i = 0; i <= totalPoints / 3; i++) {
+      let t = i / (totalPoints / 3);
+      let x = lerp(bv3.x, v1.x, t);
+      let y = lerp(bv3.y, v1.y, t);
+      pathPoints.push({ x, y });
+    }
+
+    for (let i = 0; i <= totalPoints / 2; i++) {
+      let t = i / (totalPoints / 2);
+      let x = bezierPoint(qv2.x, bv1.x, bv2.x, bv3.x, t);
+      let y = bezierPoint(qv2.y, bv1.y, bv2.y, bv3.y, t);
+      pathPoints.push({ x, y });
+    }
+  }
+
+  // Add the event listener for window resize
+  window.addEventListener('resize', resize);
 
   animate();
 });
