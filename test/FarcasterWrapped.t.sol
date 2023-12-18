@@ -191,6 +191,7 @@ contract FarcasterWrappedTest is Test {
     ) public {
         vm.assume(to != address(0));
         vm.assume(caller != owner);
+        vm.assume(caller != address(token));
 
         vm.deal(caller, token.mintFee());
         bytes memory sig = _signMint(signerPk, to, fid, stats);
