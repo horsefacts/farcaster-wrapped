@@ -141,7 +141,7 @@ contract Renderer is ScriptyHTML {
     /// @notice Read contract metadata JSON
     function contractJSON() public pure returns (string memory) {
         return
-        '{"name":"Farcaster Wrapped 2023","image":"ipfs://bafkreicxcw7vkzh33py2pqx6gxp2vdq2ccxrk4qoocrtihyct4nevhazjm","description":"A commemorative NFT for all the people involved in proliferating the Farcaster protocol in 2023"}';
+        '{"name":"Farcaster Wrapped 2023","image":"ipfs://bafybeibesesfccddtczatb6t4pt6q6qzgvuag36tkyelmnstagktnrrfti","description":"A commemorative NFT for all the people involved in proliferating the Farcaster protocol in 2023"}';
     }
 
     function _color(uint32 seed) internal pure returns (bytes memory) {
